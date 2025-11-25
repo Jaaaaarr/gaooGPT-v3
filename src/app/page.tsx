@@ -18,6 +18,8 @@ export default function Chat() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [enmaCho, setEnmaCho] = useState<EnmaCho>(initialEnmaCho);
 
+  const [mobileTab, setMobileTab] = useState<'chat' | 'artifact'>('chat');
+
   // Monitor tool calls to update state
   useEffect(() => {
     if (messages.length === 0) return;
@@ -49,6 +51,8 @@ export default function Chat() {
     // Router Logic: If input is long enough, trigger Analyst
     if (userMessage.length > 30) {
       setIsAnalyzing(true);
+      // Switch to artifact tab on mobile to show the user something is happening (optional, or keep them in chat)
+      // setMobileTab('artifact'); 
       try {
         const response = await fetch('/api/analyze', {
           method: 'POST',
@@ -57,6 +61,10 @@ export default function Chat() {
         const data = await response.json();
         analystReport = data;
         setFixedDocument(data.fixed_document_markdown);
+        // Auto-switch to artifact tab on mobile when analysis is done
+        if (window.innerWidth < 768) {
+          setMobileTab('artifact');
+        }
       } catch (error) {
         console.error('Analysis failed:', error);
       } finally {
@@ -81,9 +89,26 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden">
+
+      {/* Mobile Tab Switcher */}
+      <div className="md:hidden flex border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <button
+          onClick={() => setMobileTab('chat')}
+          className={`flex-1 p-3 text-sm font-bold ${mobileTab === 'chat' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+        >
+          Chat
+        </button>
+        <button
+          onClick={() => setMobileTab('artifact')}
+          className={`flex-1 p-3 text-sm font-bold ${mobileTab === 'artifact' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+        >
+          The Fix {fixedDocument && '🔴'}
+        </button>
+      </div>
+
       {/* Left Panel: Chat */}
-      <div className="w-1/2 flex flex-col border-r border-gray-300 dark:border-gray-700 relative">
+      <div className={`w-full md:w-1/2 flex flex-col border-r border-gray-300 dark:border-gray-700 relative ${mobileTab === 'chat' ? 'flex' : 'hidden md:flex'} h-full`}>
         {/* Debug Panel */}
         <div className="absolute top-0 right-0 p-2 m-2 bg-black/80 text-white text-xs rounded z-10 pointer-events-none">
           <div>Patience: {enmaCho.patienceTokens}</div>
@@ -94,7 +119,7 @@ export default function Chat() {
         <div className="flex-1 overflow-y-auto p-4 space-y-4 pt-12">
           {messages.map(m => (
             <div key={m.id} className={`p-4 rounded-lg ${m.role === 'user' ? 'bg-blue-100 dark:bg-blue-900 ml-auto max-w-[80%]' : 'bg-white dark:bg-gray-800 mr-auto max-w-[80%]'}`}>
-              <div className="font-bold text-xs mb-1 opacity-50">{m.role === 'user' ? 'YOU' : 'GAOO'}</div>
+              <div className="font-bold text-xs mb-1 opacity-50">{m.role === 'user' ? 'YOU' : '🦖ガオー'}</div>
               <div className="whitespace-pre-wrap">
                 {(m as any).content
                   ? (m as any).content
@@ -123,7 +148,7 @@ export default function Chat() {
       </div>
 
       {/* Right Panel: Artifact (The Fix) */}
-      <div className="w-1/2 p-8 bg-gray-50 dark:bg-gray-950 overflow-y-auto">
+      <div className={`w-full md:w-1/2 p-8 bg-gray-50 dark:bg-gray-950 overflow-y-auto ${mobileTab === 'artifact' ? 'block' : 'hidden md:block'} h-full`}>
         <h2 className="text-xl font-bold mb-4 text-gray-700 dark:text-gray-300">The Fix (Artifact)</h2>
         {fixedDocument ? (
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
