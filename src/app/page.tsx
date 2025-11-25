@@ -96,8 +96,8 @@ export default function Chat() {
             <div key={m.id} className={`p-4 rounded-lg ${m.role === 'user' ? 'bg-blue-100 dark:bg-blue-900 ml-auto max-w-[80%]' : 'bg-white dark:bg-gray-800 mr-auto max-w-[80%]'}`}>
               <div className="font-bold text-xs mb-1 opacity-50">{m.role === 'user' ? 'YOU' : 'GAOO'}</div>
               <div className="whitespace-pre-wrap">
-                {m.content
-                  ? m.content
+                {(m as any).content
+                  ? (m as any).content
                   : (m as any).parts
                     ? (m as any).parts.map((p: any, i: number) => p.type === 'text' ? p.text : '').join('')
                     : ''}
