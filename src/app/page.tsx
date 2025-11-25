@@ -89,7 +89,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden">
+    <div className="flex flex-col md:flex-row h-[100dvh] bg-gray-100 dark:bg-gray-900 overflow-hidden">
 
       {/* Mobile Tab Switcher */}
       <div className="md:hidden flex border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
